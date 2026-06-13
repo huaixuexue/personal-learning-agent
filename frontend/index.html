@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Personal Learning Agent</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">AI 期末考核 + 个人项目</p>
+      <h1>Personal Learning Agent</h1>
+      <p class="subtitle">记录学习过程，沉淀历史记忆，后续接入任务规划、提醒和可靠性评测。</p>
+    </div>
+    <div class="status-pill" id="serviceStatus">检查服务中</div>
+  </header>
+
+  <main class="layout">
+    <section class="panel form-panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Learning Log</p>
+          <h2>今日日志</h2>
+        </div>
+        <button class="ghost-button" id="resetButton" type="button">清空</button>
+      </div>
+
+      <form id="logForm" class="log-form">
+        <label>
+          日期
+          <input type="date" id="date" name="date" required />
+        </label>
+
+        <label>
+          今日原始记录
+          <textarea id="content" name="content" rows="5" placeholder="例如：今天复习了计网 TCP，完成了 Agent 项目的数据库设计，遇到的问题是 FastAPI 不熟，明天继续做日志接口。" required></textarea>
+        </label>
+
+        <div class="field-grid">
+          <label>
+            今日任务
+            <textarea id="tasks" name="tasks" rows="3" placeholder="复习计网 TCP；完成数据库设计"></textarea>
+          </label>
+          <label>
+            遇到问题
+            <textarea id="problems" name="problems" rows="3" placeholder="FastAPI 路由不熟；数据库关系还不清楚"></textarea>
+          </label>
+        </div>
+
+        <div class="field-grid">
+          <label>
+            明日计划
+            <textarea id="tomorrow_plan" name="tomorrow_plan" rows="3" placeholder="继续做日志接口；整理项目 README"></textarea>
+          </label>
+          <label>
+            备注
+            <textarea id="remark" name="remark" rows="3" placeholder="需要补 FastAPI 基础"></textarea>
+          </label>
+        </div>
+
+        <div class="compact-grid">
+          <label>
+            类别
+            <input type="text" id="category" name="category" placeholder="Agent项目 / 计网 / 论文" />
+          </label>
+          <label>
+            状态
+            <select id="status" name="status">
+              <option value="进行中">进行中</option>
+              <option value="已完成">已完成</option>
+              <option value="未开始">未开始</option>
+              <option value="受阻">受阻</option>
+            </select>
+          </label>
+          <label>
+            耗时（分钟）
+            <input type="number" id="duration_minutes" name="duration_minutes" min="0" step="10" value="60" />
+          </label>
+        </div>
+
+        <button class="primary-button" type="submit">保存学习日志</button>
+      </form>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Memory Base</p>
+          <h2>历史日志</h2>
+        </div>
+        <button class="ghost-button" id="refreshButton" type="button">刷新</button>
+      </div>
+
+      <div class="filters">
+        <label>
+          按日期
+          <input type="date" id="filterDate" />
+        </label>
+        <label>
+          关键词
+          <input type="search" id="filterKeyword" placeholder="Agent / TCP / 论文" />
+        </label>
+        <button class="secondary-button" id="searchButton" type="button">筛选</button>
+      </div>
+
+      <div class="summary-strip">
+        <div>
+          <span id="totalCount">0</span>
+          <small>条记录</small>
+        </div>
+        <div>
+          <span id="totalMinutes">0</span>
+          <small>分钟</small>
+        </div>
+      </div>
+
+      <div id="message" class="message" hidden></div>
+      <div id="logList" class="log-list"></div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
