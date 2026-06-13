@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+
+build/
+dist/
+*.spec
+
+data/users/
+data/*.db
+
+.env
+.venv/
+venv/

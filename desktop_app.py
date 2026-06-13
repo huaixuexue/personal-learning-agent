@@ -1,6 +1,10 @@
-﻿from __future__ import annotations
+﻿#python -m PyInstaller --noconfirm --windowed --onefile --name "PersonalLearningAgent" --icon "assets/app_icon.ico" --add-data "assets;assets" desktop_app.py
+from __future__ import annotations
 
+import os
+import shutil
 import sqlite3
+import sys
 import textwrap
 import tkinter as tk
 import ctypes
@@ -11,11 +15,13 @@ from tkinter import messagebox
 from PIL import Image, ImageDraw, ImageFont, ImageTk
 
 
-ROOT_DIR = Path(__file__).resolve().parent
-DEFAULT_DB_PATH = ROOT_DIR / "data" / "learning_agent.db"
-USER_DB_DIR = ROOT_DIR / "data" / "users"
-BG_PATH = ROOT_DIR / "assets" / "anime_study_background.png"
-ICON_PATH = ROOT_DIR / "assets" / "app_icon.ico"
+PROJECT_DIR = Path(__file__).resolve().parent
+BUNDLE_DIR = Path(getattr(sys, "_MEIPASS", PROJECT_DIR))
+APP_DATA_DIR = Path(os.getenv("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "PersonalLearningAgent"
+USER_DB_DIR = APP_DATA_DIR / "data" / "users"
+LEGACY_USER_DB_DIR = PROJECT_DIR / "data" / "users"
+BG_PATH = BUNDLE_DIR / "assets" / "anime_study_background.png"
+ICON_PATH = BUNDLE_DIR / "assets" / "app_icon.ico"
 
 TEXT = "#65465b"
 PINK_BUTTON = (251, 225, 239, 218)
@@ -96,12 +102,43 @@ class LogRepository:
                 (log_date,),
             ).fetchone()
 
+    def create_snapshot(
+        self,
+        log_date: str,
+        content: str = "",
+        tasks: str = "",
+        problems: str = "",
+        tomorrow_plan: str = "",
+        category: str = "学习日志",
+        status: str = "进行中",
+        duration_minutes: int = 0,
+        remark: str = "",
+    ) -> None:
+        self.create(
+            {
+                "date": log_date,
+                "content": content,
+                "tasks": tasks,
+                "problems": problems,
+                "tomorrow_plan": tomorrow_plan,
+                "category": category,
+                "status": status,
+                "duration_minutes": duration_minutes,
+                "remark": remark,
+            }
+        )
+
 
 def user_db_path(username: str) -> Path:
     safe = "".join(ch for ch in username.strip() if ch.isalnum() or ch in ("_", "-"))
     if not safe:
         safe = "default"
-    return USER_DB_DIR / f"{safe}.db"
+    target = USER_DB_DIR / f"{safe}.db"
+    legacy = LEGACY_USER_DB_DIR / f"{safe}.db"
+    if legacy.exists() and not target.exists():
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(legacy, target)
+    return target
 
 
 class CanvasDiaryApp:
@@ -285,6 +322,7 @@ class CanvasDiaryApp:
             th = int(h * 0.56)
             self.rounded(draw, (tx, ty, tx + tw, ty + th), 14, (255, 247, 252, 186), LINE)
             self.text(draw, (tx + 16, ty + 18), "明日计划", 18, True, anchor="la")
+            self.button(draw, "tomorrow_save", (tx + tw - 142, ty + 10, tx + tw - 82, ty + 38), "保存")
             self.button(draw, "tomorrow_close", (tx + tw - 74, ty + 10, tx + tw - 14, ty + 38), "返回")
             self.field(draw, "tomorrow", (tx + 14, ty + 52, tx + tw - 14, ty + th - 14))
 
@@ -536,6 +574,8 @@ class CanvasDiaryApp:
         elif name == "tomorrow":
             self.tomorrow_open = True
             self.active_field = "tomorrow"
+        elif name == "tomorrow_save":
+            self.save_tomorrow_plan()
         elif name == "tomorrow_close":
             self.tomorrow_open = False
             self.active_field = None
@@ -607,6 +647,8 @@ class CanvasDiaryApp:
         self.login_mode = False
         self.active_field = "plan"
         self.reset_form()
+        self.load_selected_date()
+        self.draw()
 
     def logout(self) -> None:
         self.repo = None
@@ -723,6 +765,62 @@ class CanvasDiaryApp:
         self.values["tomorrow"] = log["tomorrow_plan"] or ""
         for key in ("note", "plan", "todo", "tomorrow"):
             self.cursors[key] = len(self.values[key])
+
+    def save_tomorrow_plan(self) -> None:
+        if self.repo is None:
+            messagebox.showerror("保存失败", "请先登录")
+            return
+        try:
+            current_day = datetime.strptime(self.values["date"].strip(), "%Y-%m-%d").date()
+        except ValueError:
+            messagebox.showerror("日期格式错误", "日期格式应为 YYYY-MM-DD，例如 2026-06-12")
+            return
+
+        tomorrow_text = self.values["tomorrow"].strip()
+        if not tomorrow_text:
+            self.show_toast("明日计划为空")
+            return
+
+        current_date = current_day.isoformat()
+        next_date = (current_day + timedelta(days=1)).isoformat()
+        note = self.values["note"].strip()
+        current_content = f"心情：{self.values['mood']}\n\n{note}" if note else f"心情：{self.values['mood']}\n\n"
+
+        try:
+            self.repo.create_snapshot(
+                current_date,
+                content=current_content,
+                tasks=self.values["plan"].strip(),
+                problems=self.values["todo"].strip(),
+                tomorrow_plan=tomorrow_text,
+            )
+
+            next_log = self.repo.latest_by_date(next_date)
+            if next_log is None:
+                self.repo.create_snapshot(
+                    next_date,
+                    content="心情：开心 · 小心心\n\n",
+                    tasks=tomorrow_text,
+                )
+            else:
+                self.repo.create_snapshot(
+                    next_date,
+                    content=next_log["content"] or "心情：开心 · 小心心\n\n",
+                    tasks=tomorrow_text,
+                    problems=next_log["problems"] or "",
+                    tomorrow_plan=next_log["tomorrow_plan"] or "",
+                    category=next_log["category"] or "学习日志",
+                    status=next_log["status"] or "进行中",
+                    duration_minutes=next_log["duration_minutes"] or 0,
+                    remark=next_log["remark"] or "",
+                )
+        except Exception as exc:
+            messagebox.showerror("保存失败", str(exc))
+            return
+
+        self.tomorrow_open = False
+        self.active_field = None
+        self.show_toast("明日计划已保存！")
 
     def save_log(self) -> None:
         if self.repo is None:
