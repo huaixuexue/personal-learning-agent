@@ -3,123 +3,270 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Personal Learning Agent</title>
+  <title>今日の学习手账</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div>
-      <p class="eyebrow">AI 期末考核 + 个人项目</p>
-      <h1>Personal Learning Agent</h1>
-      <p class="subtitle">记录学习过程，沉淀历史记忆，后续接入任务规划、提醒和可靠性评测。</p>
-    </div>
-    <div class="status-pill" id="serviceStatus">检查服务中</div>
-  </header>
+  <main class="app-shell">
+    <section class="login-panel" id="loginPanel">
+      <div class="login-card">
+        <h1>今日の学习手账</h1>
+        <label class="login-field">
+          <span>请输入用户名</span>
+          <input id="loginName" type="text" autocomplete="username" placeholder="例如：huaixuexue" />
+        </label>
+        <label class="login-field">
+          <span>请输入密码</span>
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="第一次登录会自动创建账号" />
+        </label>
+        <button class="soft-button" id="loginButton" type="button">登录</button>
+      </div>
+    </section>
 
-  <main class="layout">
-    <section class="panel form-panel">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Learning Log</p>
-          <h2>今日日志</h2>
+    <section class="diary-panel" id="diaryPanel" hidden>
+      <div class="top-actions">
+        <div class="top-left-actions">
+          <button class="ai-button" id="aiToggle" type="button">
+            <img src="/assets/ai_assistant_icon.png" alt="" />
+            AI助手
+          </button>
+          <button class="soft-button small" id="profileToggle" type="button">用户画像</button>
+          <button class="soft-button small" id="databaseToggle" type="button">数据库</button>
         </div>
-        <button class="ghost-button" id="resetButton" type="button">清空</button>
+        <div class="top-right-actions">
+          <span class="user-chip" id="userChip"></span>
+          <button class="soft-button small" id="historyToggle" type="button">搜索</button>
+          <button class="soft-button small" id="exportToggle" type="button">导出</button>
+        </div>
       </div>
 
-      <form id="logForm" class="log-form">
-        <label>
-          日期
-          <input type="date" id="date" name="date" required />
-        </label>
+      <header class="mood-bar">
+        <div class="mood-title">今日の心情：</div>
+        <select id="mood">
+          <option>开心 · 小心心</option>
+          <option>平静 · 云朵</option>
+          <option>有动力 · 星光</option>
+          <option>有点累 · 休息</option>
+          <option>焦虑 · 深呼吸</option>
+          <option>想摆烂 · 充电</option>
+        </select>
+        <input id="date" type="date" />
+      </header>
 
-        <label>
-          今日原始记录
-          <textarea id="content" name="content" rows="5" placeholder="例如：今天复习了计网 TCP，完成了 Agent 项目的数据库设计，遇到的问题是 FastAPI 不熟，明天继续做日志接口。" required></textarea>
-        </label>
+      <form id="logForm" class="content-grid">
+        <section class="left-column">
+          <section class="field-block plan-block">
+            <div class="plan-head">
+              <span>今日计划</span>
+              <div class="plan-actions">
+                <button class="soft-button small" id="newPlanButton" type="button">新建</button>
+                <button class="soft-button small" id="deletePlanButton" type="button">删除</button>
+              </div>
+            </div>
+            <div class="plan-box">
+              <div id="planItems" class="plan-items"></div>
+            </div>
+            <textarea id="tasks" hidden></textarea>
+          </section>
 
-        <div class="field-grid">
-          <label>
-            今日任务
-            <textarea id="tasks" name="tasks" rows="3" placeholder="复习计网 TCP；完成数据库设计"></textarea>
+          <label class="field-block todo-block">
+            <span>待解决事项</span>
+            <textarea id="problems" placeholder="卡住的问题、要查的资料"></textarea>
           </label>
-          <label>
-            遇到问题
-            <textarea id="problems" name="problems" rows="3" placeholder="FastAPI 路由不熟；数据库关系还不清楚"></textarea>
-          </label>
-        </div>
 
-        <div class="field-grid">
-          <label>
-            明日计划
-            <textarea id="tomorrow_plan" name="tomorrow_plan" rows="3" placeholder="继续做日志接口；整理项目 README"></textarea>
-          </label>
-          <label>
-            备注
-            <textarea id="remark" name="remark" rows="3" placeholder="需要补 FastAPI 基础"></textarea>
-          </label>
-        </div>
+          <button class="soft-button logout-button" id="logoutButton" type="button">退出</button>
+        </section>
 
-        <div class="compact-grid">
-          <label>
-            类别
-            <input type="text" id="category" name="category" placeholder="Agent项目 / 计网 / 论文" />
+        <section class="right-column">
+          <div class="note-head">
+            <h1>今日笔记</h1>
+            <div class="note-actions">
+              <button class="soft-button" id="tomorrowToggle" type="button">明日</button>
+              <button class="soft-button" type="submit">保存</button>
+            </div>
+          </div>
+          <label class="note-block">
+            <textarea id="content" placeholder="记录今天的学习过程、灵感和想法"></textarea>
           </label>
-          <label>
-            状态
-            <select id="status" name="status">
-              <option value="进行中">进行中</option>
-              <option value="已完成">已完成</option>
-              <option value="未开始">未开始</option>
-              <option value="受阻">受阻</option>
-            </select>
-          </label>
-          <label>
-            耗时（分钟）
-            <input type="number" id="duration_minutes" name="duration_minutes" min="0" step="10" value="60" />
-          </label>
-        </div>
+        </section>
 
-        <button class="primary-button" type="submit">保存学习日志</button>
+        <input id="category" type="hidden" value="学习日志" />
+        <input id="status" type="hidden" value="进行中" />
+        <input id="duration_minutes" type="hidden" value="0" />
+        <input id="remark" type="hidden" value="" />
       </form>
     </section>
 
-    <section class="panel list-panel">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Memory Base</p>
-          <h2>历史日志</h2>
+    <aside class="drawer" id="tomorrowDrawer" hidden>
+      <div class="drawer-card">
+        <div class="drawer-head">
+          <h2>明日计划</h2>
+          <div class="drawer-actions">
+            <button class="soft-button small" id="tomorrowSave" type="button">保存</button>
+            <button class="soft-button small" data-close="tomorrowDrawer" type="button">返回</button>
+          </div>
         </div>
-        <button class="ghost-button" id="refreshButton" type="button">刷新</button>
+        <textarea id="tomorrow_plan" placeholder="写下明天要做的事情"></textarea>
       </div>
+    </aside>
 
-      <div class="filters">
-        <label>
-          按日期
-          <input type="date" id="filterDate" />
-        </label>
-        <label>
-          关键词
-          <input type="search" id="filterKeyword" placeholder="Agent / TCP / 论文" />
-        </label>
-        <button class="secondary-button" id="searchButton" type="button">筛选</button>
-      </div>
-
-      <div class="summary-strip">
-        <div>
-          <span id="totalCount">0</span>
-          <small>条记录</small>
+    <aside class="drawer" id="historyDrawer" hidden>
+      <div class="drawer-card wide search-card">
+        <div class="drawer-head">
+          <h2>历史搜索</h2>
+          <button class="soft-button small" data-close="historyDrawer" type="button">返回</button>
         </div>
-        <div>
-          <span id="totalMinutes">0</span>
-          <small>分钟</small>
+        <div class="history-tools">
+          <input type="search" id="filterKeyword" placeholder="输入关键词，搜索计划 / 笔记 / 待解决事项" />
+          <button class="soft-button small" id="searchButton" type="button">搜索</button>
+          <button class="soft-button small" id="refreshButton" type="button">全部</button>
+        </div>
+        <div id="message" class="message" hidden></div>
+        <div id="logList" class="log-list"></div>
+      </div>
+    </aside>
+
+    <aside class="drawer" id="exportDrawer" hidden>
+      <div class="drawer-card export-card">
+        <div class="drawer-head">
+          <h2>导出 Word</h2>
+          <button class="soft-button small" data-close="exportDrawer" type="button">返回</button>
+        </div>
+        <div class="export-fields">
+          <label class="login-field">
+            <span>起始日期</span>
+            <input id="exportStartDate" type="date" />
+          </label>
+          <label class="login-field">
+            <span>终止日期</span>
+            <input id="exportEndDate" type="date" />
+          </label>
+          <div class="drawer-actions">
+            <button class="soft-button" id="exportConfirm" type="button">确定</button>
+            <button class="soft-button" data-close="exportDrawer" type="button">返回</button>
+          </div>
         </div>
       </div>
+    </aside>
 
-      <div id="message" class="message" hidden></div>
-      <div id="logList" class="log-list"></div>
-    </section>
+    <aside class="drawer" id="aiDrawer" hidden>
+      <div class="drawer-card ai-card">
+        <div class="drawer-head">
+          <h2>主人，来聊聊天吧~</h2>
+          <div class="drawer-actions">
+            <button class="soft-button small" id="applyPlanButton" type="button" hidden>应用</button>
+            <button class="soft-button small" data-close="aiDrawer" type="button">返回</button>
+          </div>
+        </div>
+        <div class="ai-layout">
+          <div id="aiMessages" class="ai-messages"></div>
+          <div class="ai-compose">
+            <label for="aiInput">你想问 AI：</label>
+            <textarea id="aiInput" placeholder="可以问历史记录、学习计划，也可以普通聊天"></textarea>
+            <input id="aiFileInput" type="file" accept="image/*,.txt,.md,.csv,.json,.pdf,.docx" hidden />
+            <div class="ai-send-row">
+              <button class="soft-button" id="aiUpload" type="button">上传</button>
+              <button class="soft-button" id="aiSend" type="button">发送</button>
+            </div>
+            <div id="aiFileHint" class="file-hint" hidden></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <aside class="drawer" id="profileDrawer" hidden>
+      <div class="drawer-card profile-card">
+        <div class="drawer-head">
+          <h2>用户画像</h2>
+          <div class="drawer-actions">
+            <button class="soft-button small" id="profileSave" type="button">保存</button>
+            <button class="soft-button small" data-close="profileDrawer" type="button">返回</button>
+          </div>
+        </div>
+        <div class="profile-grid">
+          <label class="profile-field">
+            <span>专业身份</span>
+            <small>你的专业、年级、课程背景、项目身份。<br />例如：计算机专业本科生，正在完成人工智能课程期末项目。</small>
+            <textarea id="professional_identity"></textarea>
+          </label>
+          <label class="profile-field">
+            <span>研究方向</span>
+            <small>你关注的技术方向。<br />例如：AI Agent、大模型应用、RAG、Java 后端、个人学习管理系统。</small>
+            <textarea id="research_direction"></textarea>
+          </label>
+          <label class="profile-field">
+            <span>目标画像</span>
+            <small>你当前和近期想达成的目标。<br />例如：完成期末项目、准备答辩、实现历史记忆查询和智能规划模块。</small>
+            <textarea id="goal_profile"></textarea>
+          </label>
+          <label class="profile-field">
+            <span>能力状态</span>
+            <small>你现在大概会什么、不会什么、处于什么水平。<br />例如：Python 基础一般，能跟着改代码，但对后端接口和数据库还不熟。</small>
+            <textarea id="ability_status"></textarea>
+          </label>
+          <label class="profile-field">
+            <span>知识掌握度</span>
+            <small>对不同知识点的掌握情况。<br />例如：SQLite 基础了解，FastAPI 不熟，AI Agent 理论了解一点，前端布局需要辅助。</small>
+            <textarea id="knowledge_mastery"></textarea>
+          </label>
+          <label class="profile-field">
+            <span>执行习惯</span>
+            <small>你的学习和做项目习惯。<br />例如：需要清单式任务，喜欢一步一步完成，不喜欢一次给太多抽象概念。</small>
+            <textarea id="execution_habits"></textarea>
+          </label>
+          <label class="profile-field">
+            <span>时间约束</span>
+            <small>你每天或每周可用于学习/项目的时间。<br />例如：晚上 2 小时，周末集中做项目。</small>
+            <textarea id="time_constraints"></textarea>
+          </label>
+          <label class="profile-field">
+            <span>风险偏好</span>
+            <small>你希望计划保守还是激进。<br />例如：更适合稳妥推进，不要安排太满。</small>
+            <textarea id="risk_preference"></textarea>
+          </label>
+          <label class="profile-field">
+            <span>补充记忆</span>
+            <small>其他希望 AI 长期记住的信息。<br />例如：希望解释尽量小白化，写报告时要贴合人工智能期末考核。</small>
+            <textarea id="memory_notes"></textarea>
+          </label>
+        </div>
+      </div>
+    </aside>
+
+    <aside class="drawer" id="databaseDrawer" hidden>
+      <div class="drawer-card wide database-card">
+        <div class="drawer-head">
+          <h2>文件数据库</h2>
+          <div class="drawer-actions">
+            <input id="databaseFileInput" type="file" accept="image/*,.txt,.md,.csv,.json,.pdf,.docx" hidden />
+            <button class="soft-button small" id="databaseUpload" type="button">上传</button>
+            <button class="soft-button small" id="databaseDownload" type="button">下载</button>
+            <button class="soft-button small" data-close="databaseDrawer" type="button">返回</button>
+          </div>
+        </div>
+        <div class="database-tools">
+          <input id="databaseDate" type="date" />
+          <button class="soft-button small" id="databaseDateSearch" type="button">按日期搜索</button>
+          <input id="databaseKeyword" type="search" placeholder="输入文件名关键字" />
+          <button class="soft-button small" id="databaseKeywordSearch" type="button">按关键字搜索</button>
+          <button class="soft-button small" id="databaseClearSearch" type="button">全部</button>
+        </div>
+        <div class="database-layout">
+          <section class="file-section">
+            <h3>今日上传文件</h3>
+            <div id="todayFiles" class="file-list"></div>
+          </section>
+          <section class="file-section">
+            <h3>历史上传文件</h3>
+            <div id="historyFiles" class="file-list"></div>
+          </section>
+        </div>
+      </div>
+    </aside>
+
+    <div id="toast" class="toast" hidden>保存成功！</div>
   </main>
 
-  <script src="./app.js"></script>
+  <script src="./app.js?v=20260614-user-ai-memory"></script>
 </body>
 </html>

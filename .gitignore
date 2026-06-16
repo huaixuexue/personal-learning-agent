@@ -7,7 +7,9 @@ dist/
 
 data/users/
 data/*.db
+uploads/
 
 .env
+config.local.json
 .venv/
 venv/

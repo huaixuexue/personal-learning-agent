@@ -1,7 +1,11 @@
 ﻿from sqlalchemy import create_engine
+from pathlib import Path
+
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 DATABASE_URL = "sqlite:///./data/learning_agent.db"
+
+Path("data").mkdir(exist_ok=True)
 
 engine = create_engine(
     DATABASE_URL,
