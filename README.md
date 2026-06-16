@@ -213,7 +213,6 @@ data/learning_agent.db
 uploads/
 ```
 
-这些属于本地运行数据，不应该提交到 GitHub。
 
 ## 6. AI 配置
 
