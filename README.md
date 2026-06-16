@@ -1,4 +1,5 @@
 # Personal Learning Agent 网页版说明
+#本项目为个人项目，包括网页版和应用版，应用版比网页版欠缺了一些功能，仅仅适合个人使用。
 
 ## 1. 项目定位
 
@@ -287,56 +288,5 @@ http://127.0.0.1:8080/docs
 
 ## 8. Windows 任务计划启动建议
 
-可以创建 `start_agent.bat`：
 
-```bat
-@echo off
-cd /d C:\Users\agent-project\agent-project
-.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8080
-```
-
-如果任务计划显示正在运行，但 8080 端口没有监听，优先检查：
-
-- `cd /d` 路径是否正确
-- `.venv\Scripts\python.exe` 是否存在
-- 是否安装了 `requirements.txt`
-- 任务计划是否设置了正确的“起始于”目录
-- 防火墙或服务器安全组是否放行 8080
-- 是否缺少日志输出导致启动错误不可见
-
-建议把 bat 改成带日志版本：
-
-```bat
-@echo off
-cd /d C:\Users\agent-project\agent-project
-.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8080 >> agent.log 2>&1
-```
-
-## 9. GitHub 上传建议
-
-应该上传：
-
-- `app/`
-- `frontend/`
-- `assets/`
-- `requirements.txt`
-- `README.md`
-- `README_WEB.md`
-- `README_APP.md`
-- `requirements-desktop.txt`
-- `build_desktop.ps1`
-- `desktop_app.py`
-
-不应该上传：
-
-- `config.local.json`
-- `.env`
-- `.venv/`
-- `venv/`
-- `data/*.db`
-- `uploads/`
-- `__pycache__/`
-- `build/`
-- `dist/`
-- 本地测试压缩包
 
