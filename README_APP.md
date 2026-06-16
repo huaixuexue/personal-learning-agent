@@ -71,7 +71,7 @@ data/users/
 }
 ```
 
-不要把真实 API Key 提交到 GitHub。
+
 
 ## 5. 本地运行应用版
 
@@ -114,7 +114,7 @@ pyinstaller --noconfirm --windowed --onefile --name "PersonalLearningAgent" --ic
 dist\PersonalLearningAgent.exe
 ```
 
-`dist/` 和 `build/` 是构建产物，不建议提交到 GitHub。GitHub 中保留源码和打包脚本即可，其他电脑可以重新打包。
+`d
 
 ## 7. 应用版和网页版区别
 
@@ -129,23 +129,7 @@ dist\PersonalLearningAgent.exe
 | Word 导出 | 网页版支持 | 当前应用版未实现 |
 | 适合场景 | 部署演示、远程访问、正式网页版 | 本机记录、轻量桌面使用 |
 
-## 8. GitHub 上传建议
 
-应用版需要上传：
-
-- `desktop_app.py`
-- `requirements-desktop.txt`
-- `build_desktop.ps1`
-- `assets/app_icon.ico`
-- `assets/ai_assistant_icon.png`
-- `assets/anime_study_background.png`
-- `README_APP.md`
-
-不应该上传：
-
-- `%LOCALAPPDATA%\PersonalLearningAgent\config.json`
-- `config.local.json`
-- `data/users/`
 - `dist/`
 - `build/`
 - `*.spec`
