@@ -249,7 +249,7 @@ qwen-plus
 }
 ```
 
-`config.local.json` 包含密钥，已经加入 `.gitignore`，不要上传到 GitHub。
+`config.local.json` 包含密钥，需要自己配置。
 
 ## 7. 本地运行
 
